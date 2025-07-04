@@ -3,10 +3,12 @@ library(nbaR)
 library(tidyverse)
 
 
-# this is not required for complex maps (which suit tiff format outputs)
-# for web content the extra steps 
+# this is not required for complex maps (which suit image (tiff, png, jpeg) 
+# format outputs)
 
-# Create dummy data to test a plot output 
+# for web content the extra steps are not really required as png is the default 
+
+# Create fake dummy data to test a plot output 
 dummy_df <- tibble(
   Biome = c("Overall","Forest", "Grassland", "Fynbos", "Karoo"),
   CR = c(27,3, 6, 18, 0),
@@ -36,12 +38,11 @@ testplot <- testplot +
   theme(
     legend.position = "bottom",             # keep it at the bottom
     legend.margin = margin(l = -45, r = -5, t = -5, b = -5)) 
+# to tweak position of legend uselegend.margin to prevent it being cut off: 
+# make l more negative to shift left etc 
+# but it is also affected by SCALE_TEXT above
 
-# to tweak position of legend to prevent it being cut off - make l more negative 
-# to shift left etc - but it is also affected by SCALE_TEXT above - there is 
-# a point where you cant fit in legend 
-
-# PDF output for Graphics team - for plots and maps but very complex maps use png
+# PDF output for Graphics team - for plots and very maps but very complex maps use png
 
 library(extrafont) # this has tools for embedding fonts in vector graphics which 
 # is required by the design team of the booklet.
