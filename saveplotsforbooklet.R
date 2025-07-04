@@ -1,8 +1,7 @@
 
 library(nbaR)
 library(tidyverse)
-library(extrafont) # this has tools for embedding fonts in vector graphics which 
-# is required by the design team of the booklet.
+
 
 # this is not required for complex maps (which suit tiff format outputs)
 # for web content the extra steps 
@@ -43,7 +42,12 @@ testplot <- testplot +
 # a point where you cant fit in legend 
 
 # PDF output for Graphics team - for plots and maps but very complex maps use png
-loadfonts(device = "pdf") # this is required as device = cairo_pdf is not compatible with Corel Draw
+
+library(extrafont) # this has tools for embedding fonts in vector graphics which 
+# is required by the design team of the booklet.
+
+loadfonts(device = "pdf") # this is required as device = cairo_pdf is not compatible with CorelDraw
+
 ggsave(
   filename = "outputs/test.pdf",    # File name with extension for format
   plot = testplot,

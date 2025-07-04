@@ -8,6 +8,6 @@ Testing plot and map export for booklet and webpages
 
 -   For .eps and .svg simply add "device = cairo_ps" or "device = cairo_svg".
 
--   For pdf there is an extra step first make a special device "pdf" then use use "device = "pdf""
+-   For pdf there is an extra step first make a special device = "pdf" then use use "device = "pdf"" in the ggsave script.
 
 -   For complex raster based maps use png or tiff not svg, eps or pdf (standard ggsave works fine - just give output the correct .tiff or.png or .jpeg, and set dpi = 300)
