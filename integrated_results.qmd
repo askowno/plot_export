@@ -1,0 +1,224 @@
+---
+title: "integrated_results"
+format: html
+---
+
+```{r}
+# libraries
+library(tidyverse)
+library(readxl)
+library(nbaR)
+library(extrafont) # this has tools for embedding fonts in vector graphics which 
+# is required by the design team of the booklet.
+
+loadfonts(device = "pdf") # this is required as device = cairo_pdf is not compatible with CorelDraw
+
+```
+
+```{r}
+# import RLE data for each realm and then make integrated table
+#COUNTS and EXTENT RLE
+
+rle_count_ter <- read.csv("C:/Rdata/RLE_terr/outputs/rle_count.csv")
+rle_ext_ter <- read.csv("C:/Rdata/RLE_terr/outputs/rle_ext.csv")
+
+rle_count_est <- read.csv("C:/Rdata/RLE_est/outputs/rle24_est_sum_count.csv") 
+rle_ext_est <- read.csv("C:/Rdata/RLE_est/outputs/rle24_est_sum_ext.csv") 
+
+rle_count_riv <- read.csv("C:/Rdata/RLE_riv/outputs/rle24_riv_count.csv")
+rle_ext_riv <- read.csv("C:/Rdata/RLE_riv/outputs/rle24_riv_ext.csv")
+
+rle_count_riv <- read.csv("C:/Rdata/RLE_riv/outputs/rle24_riv_count.csv")
+rle_ext_riv <- read.csv("C:/Rdata/RLE_riv/outputs/rle24_riv_ext.csv")
+
+rle_count_wet <- read.csv("C:/Rdata/RLE_wet/outputs/rle24_wet_count.csv")
+rle_ext_wet <- read.csv("C:/Rdata/RLE_wet/outputs/rle24_wet_ext.csv")
+
+
+# read in nba2018 results 
+nba18count <- read.csv("C:/Rdata/plot_export/outputs/nba2018_rle_realm_count.csv")
+nba18ext <- read.csv("C:/Rdata/plot_export/outputs/nba2018_rle_realm_ext.csv")
+
+rle_count_sub <- filter(nba18count, realm == "sub")
+rle_count_coa <- filter(nba18count, realm == "coa")
+rle_count_mar <- filter(nba18count, realm == "mar")
+  
+rle_ext_sub <- filter(nba18ext, realm == "sub")
+rle_ext_coa <- filter(nba18ext, realm == "coa")
+rle_ext_mar <- filter(nba18ext, realm == "mar")
+```
+
+```{r}
+# Clean upand consolidate counts per realm
+rle_count_ter <- rle_count_ter %>%
+  select(-X, -RLIE) %>%
+  rename(zone = T_BIOME) %>%
+  mutate(realm = "ter")
+
+rle_count_est <- rle_count_est %>%
+  select(-X, -RLIE) %>%
+  rename(zone = biogeographical_zone) %>%
+  mutate(realm = "est")
+
+rle_count_riv <- rle_count_riv %>%
+  select(-X, -RLIE) %>%
+  mutate(realm = "riv")
+
+rle_count_wet <- rle_count_wet %>%
+  select(-RLIE) %>%
+  rename(zone = hgm) %>%
+  mutate(realm = "wet")
+
+# BIND tables of RLE count together
+rle_count_zones <- bind_rows(rle_count_ter, rle_count_riv, rle_count_wet, rle_count_est)
+
+rle_count_tot <- rle_count_zones %>%
+  filter(zone == "Total") %>% 
+  relocate(realm, .before = zone) %>% 
+  select(-zone) %>%
+  bind_rows(
+    summarise(., across(CR:Total, sum, na.rm = TRUE)) %>%
+      mutate(realm = "Overall")
+  ) %>%
+  bind_rows(rle_count_coa,rle_count_sub, rle_count_mar )
+
+
+```
+
+```{r}
+# Clean upand consolidate extent per realm
+rle_ext_ter <- rle_ext_ter %>%
+  select(-X) %>%
+  rename(zone = T_BIOME) %>%
+  mutate(realm = "ter")
+
+rle_ext_est <- rle_ext_est %>%
+  select(-X) %>%
+  rename(zone = biogeographical_zone) %>%
+  mutate(realm = "est")
+
+rle_ext_riv <- rle_ext_riv %>%
+  select(-X) %>%
+  mutate(realm = "riv")
+
+rle_ext_wet <- rle_ext_wet %>%
+  rename(zone = hgm) %>%
+  mutate(realm = "wet")
+
+
+
+# BIND tables of RLE count together
+rle_ext_zones <- bind_rows(rle_ext_ter, rle_ext_riv, rle_ext_wet, rle_ext_est)
+
+rle_ext_tot <- rle_ext_zones %>%
+  filter(zone == "Total") %>% 
+  relocate(realm, .before = zone) %>% 
+  select(-zone) %>%
+  bind_rows(
+    summarise(., across(CR:Total, sum, na.rm = TRUE)) %>%
+      mutate(realm = "Overall")
+  ) %>%
+  bind_rows(rle_ext_coa,rle_ext_sub, rle_ext_mar )
+```
+
+```{r}
+# Make COUNT plots for booklet
+rle_count_tot <-  rle_count_tot %>%
+  rename( `Critically Endangered` = CR, 
+         `Endangered` = EN, 
+         `Vulnerable` = VU, 
+         `Least Concern` = LC ) %>%
+   mutate(realm = recode(realm,
+                        "sub" = "Sub-Antarctic",
+                        "coa" = "Coastal", 
+                        "mar" = "Marine",
+                        "est" = "Estuarine",
+                        "wet" = "Wetland",
+                        "riv" = "River",
+                        "ter" = "Terrestrial",
+                        "Overall" = "Overall"))  %>%  
+mutate(realm = factor(realm, levels = c("Overall", "Sub-Antarctic", "Coastal", "Estuarine", "Marine",  "Wetland", "River", "Terrestrial"))) %>%
+  arrange(realm) %>%
+  filter(realm != "Overall")
+  
+
+rle_count_plot <- nba_plot(rle_count_tot,
+                     `realm`,
+                     2:5,
+                     CHRT = "bar",
+                     NUM = TRUE,
+                     LAB = "Percentage of ecosystem types",
+                     SAVE = NULL,
+                     SCALE_TEXT = 0.6)
+
+rle_count_plot <- rle_count_plot +
+  theme(
+    legend.position = "bottom",             # keep it at the bottom
+    legend.margin = margin(l = -45, r = -5, t = -5, b = -5))
+
+ggsave(
+  filename = "outputs/rle_count_plot.pdf",    # File name with extension for format
+  plot = rle_count_plot,
+  device = "pdf", # this embeds the fonts for GE to use (see first step of addfont)
+  width = 9, height = 7, units = "cm") 
+
+
+# png format for maps and web content plots and maps 
+ggsave(
+  filename = "outputs/rle_count_plot.png",    # File name with extension for format
+  plot = rle_count_plot,
+  dpi = 300, 
+  width = 9, height = 7, units = "cm") 
+
+```
+
+```{r}
+# Make EXT plots for booklet
+rle_ext_tot <-  rle_ext_tot %>%
+  rename( `Critically Endangered` = CR, 
+         `Endangered` = EN, 
+         `Vulnerable` = VU, 
+         `Least Concern` = LC ) %>%
+   mutate(realm = recode(realm,
+                        "sub" = "Sub-Antarctic",
+                        "coa" = "Coastal", 
+                        "mar" = "Marine",
+                        "est" = "Estuarine",
+                        "wet" = "Wetland",
+                        "riv" = "River",
+                        "ter" = "Terrestrial",
+                        "Overall" = "Overall"))  %>%  
+mutate(realm = factor(realm, levels = c("Overall", "Sub-Antarctic", "Coastal", "Estuarine", "Marine",  "Wetland", "River", "Terrestrial"))) %>%
+  arrange(realm) %>%
+  filter(realm != "Overall")
+  
+
+rle_ext_plot <- nba_plot(rle_ext_tot,
+                     `realm`,
+                     2:5,
+                     CHRT = "bar",
+                     NUM = FALSE,
+                     LAB = "Percentage of ecosystem extent",
+                     SAVE = NULL,
+                     SCALE_TEXT = 0.6)
+
+rle_ext_plot <- rle_ext_plot +
+  theme(
+    legend.position = "bottom",             # keep it at the bottom
+    legend.margin = margin(l = -45, r = -5, t = -5, b = -5))
+
+ggsave(
+  filename = "outputs/rle_ext_plot.pdf",    # File name with extension for format
+  plot = rle_ext_plot,
+  device = "pdf", # this embeds the fonts for GE to use (see first step of addfont)
+  width = 9, height = 7, units = "cm") 
+
+
+# png format for maps and web content plots and maps 
+ggsave(
+  filename = "outputs/rle_ext_plot.png",    # File name with extension for format
+  plot = rle_ext_plot,
+  dpi = 300, 
+  width = 9, height = 7, units = "cm") 
+
+```

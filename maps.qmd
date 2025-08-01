@@ -1,0 +1,29 @@
+---
+title: "maps"
+format: html
+---
+
+```{r}
+library(nbaR)
+library(tidyverse)
+library(sf)
+library(terra)
+library(PROJ)
+```
+
+Import some data
+
+```{r}
+
+ter_con <- rast("C:/Users/skownoa/Dropbox/NBAwork/NLC_change/mf_cond2_100m.tif")
+
+mar_con <- rast("C:/GIS/NBA2018archive/NBA2018_WORKING/marine_nba_2018/marine/Condition/NBA2018 Combined_Pressures SDH 20180914/good1fair2poor3_60_90.tif")
+
+bound <- vect("C:/Users/skownoa/Dropbox/NBAwork/SA_Boundaries/SA_boundaries_v12.shp")
+```
+
+Make some maps
+
+```{r}
+plot(bound)
+```

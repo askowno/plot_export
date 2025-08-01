@@ -1,12 +1,19 @@
+---
+title: "plots"
+format: html
+---
+
+Saving Plots as vectors for use by graphics and editing team
+
+(this is not required for complex maps (which suit image (tiff, png, jpeg) format outputs)
+
+for web content the extra steps are not really required as .png is the default
+
+```{r}
 
 library(nbaR)
 library(tidyverse)
 
-
-# this is not required for complex maps (which suit image (tiff, png, jpeg) 
-# format outputs)
-
-# for web content the extra steps are not really required as png is the default 
 
 # Create fake dummy data to test a plot output 
 dummy_df <- tibble(
@@ -70,3 +77,5 @@ ggsave(
   width = 8, height = 6, units = "cm") 
 
 
+
+```
